@@ -1,0 +1,586 @@
+<title>RKLB Living Thesis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: a flight readiness review. One masthead status board, then a single reading column with full-width instrument panels. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --sunk:#e9edf1; --ink:#14181e; --muted:#5a6372; --rule:#d3d9e1;
+  --op:#c9501c;      /* operating today, actuals */
+  --fut:#2a5bd0;     /* future value, priced in, estimates */
+  --good:#1d7a4c; --warn:#a86b12; --bad:#b8352a;
+  --op-soft:#c9501c22; --fut-soft:#2a5bd01f;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --col:44rem;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1115; --surface:#151a20; --sunk:#1b2129; --ink:#e6e9ee; --muted:#97a0ae; --rule:#2a313b;
+  --op:#ee7a45; --fut:#7097f2; --good:#4cba84; --warn:#d9a24a; --bad:#e8675a;
+  --op-soft:#ee7a4526; --fut-soft:#7097f226; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1115; --surface:#151a20; --sunk:#1b2129; --ink:#e6e9ee; --muted:#97a0ae; --rule:#2a313b;
+  --op:#ee7a45; --fut:#7097f2; --good:#4cba84; --warn:#d9a24a; --bad:#e8675a;
+  --op-soft:#ee7a4526; --fut-soft:#7097f226; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;margin:0}
+.wrap{max-width:72rem;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:0 4rem}
+a{color:var(--fut);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--fut);outline-offset:2px;border-radius:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h2{font-size:clamp(1.6rem,3.2vw,2.2rem);font-variation-settings:"wdth" 80;font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700;font-variation-settings:"wdth" 90}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-size:.82em}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.prose{max-width:var(--col);display:grid;gap:.9rem}
+.small{font-size:.86rem}
+.src{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);line-height:1.5}
+
+/* masthead */
+.mast{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(1.5rem,4vw,3.5rem);padding-block:2.5rem 2rem;border-bottom:1px solid var(--rule)}
+.ticker{font-family:var(--f-display);font-weight:900;font-variation-settings:"wdth" 62;font-size:clamp(5rem,15vw,10.5rem);line-height:.82;letter-spacing:-.02em;margin:.6rem 0 1rem}
+.ticker span{color:inherit}
+.stance{font-family:var(--f-body);font-weight:600;font-size:clamp(1.3rem,2.6vw,2rem);line-height:1.2}
+.dek{margin-top:1rem;max-width:38rem;color:var(--muted);font-size:1.05rem}
+.byline{margin-top:1.25rem;display:flex;flex-wrap:wrap;gap:.4rem 1.2rem}
+.board{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:1.1rem 1.2rem;align-self:start;font-family:var(--f-mono);font-size:.8rem}
+.board h3{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:.6rem}
+.brow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.6rem;align-items:baseline;padding:.55rem 0;border-top:1px dashed var(--rule)}
+.brow:first-of-type{border-top:0}
+.lamp{width:.62rem;height:.62rem;border-radius:50%;display:inline-block;transform:translateY(1px)}
+.lamp.good{background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 22%,transparent)}
+.lamp.warn{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 22%,transparent)}
+.lamp.bad{background:var(--bad);box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 22%,transparent)}
+.lamp.off{background:transparent;border:1.5px solid var(--muted)}
+.bval{font-weight:600;text-align:right;white-space:nowrap}
+.disclose{margin-top:1rem;padding:.7rem .8rem;border:1px solid var(--warn);border-radius:4px;color:var(--ink);font-family:var(--f-body);font-size:.85rem;line-height:1.45}
+.disclose b{color:var(--warn)}
+
+/* nav */
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);margin-inline:calc(-1 * clamp(16px,4vw,40px));padding-inline:clamp(16px,4vw,40px)}
+nav.toc ul{display:flex;gap:1.3rem;list-style:none;margin:0;padding:.7rem 0;overflow-x:auto;scrollbar-width:none}
+nav.toc a{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-decoration:none;white-space:nowrap}
+nav.toc a:hover{color:var(--ink)}
+
+section{padding-block:3.2rem 1rem;display:grid;gap:1.4rem;scroll-margin-top:3rem}
+.sechead{display:grid;gap:.5rem;max-width:var(--col)}
+
+/* thesis lines */
+.lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.line{background:var(--surface);padding:1.1rem 1.2rem;display:grid;gap:.5rem;align-content:start}
+.line .k{font-family:var(--f-display);font-weight:800;font-variation-settings:"wdth" 75;font-size:2rem;line-height:1}
+.line .k.op{color:var(--op)} .line .k.fut{color:var(--fut)}
+.callout{border-left:3px solid var(--fut);padding:.2rem 0 .2rem 1rem;max-width:var(--col)}
+.callout.op{border-color:var(--op)}
+.callout.bad{border-color:var(--bad)}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:clamp(1rem,2.4vw,1.5rem);display:grid;gap:1rem;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem}
+.chip{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--f-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
+.chip.good{color:var(--good)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)} .chip.fut{color:var(--fut)} .chip.muted{color:var(--muted)}
+.checkhead{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:baseline;justify-content:space-between}
+.checkhead h3{font-size:1.25rem}
+.chart{width:100%;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:520px}
+svg text{font-family:var(--f-mono);fill:var(--muted);font-size:11px}
+svg .ink{fill:var(--ink)} svg .op{fill:var(--op)} svg .fut{fill:var(--fut)} svg .good{fill:var(--good)} svg .bad{fill:var(--bad)} svg .warn{fill:var(--warn)}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .axis{stroke:var(--muted);stroke-width:1}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.legend i{display:inline-block;width:.75rem;height:.75rem;border-radius:2px;margin-right:.35rem;transform:translateY(1px)}
+
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tr.hl td{background:var(--sunk)}
+
+/* timeline */
+.timeline{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:.4rem}
+.tq{display:grid;gap:.35rem;align-content:start}
+.tbar{height:.5rem;border-radius:2px}
+.tbar.dated{background:var(--good)} .tbar.changed{background:var(--warn)} .tbar.undated{background:var(--bad)}
+.tq .p{font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.tq .d{font-size:.78rem;line-height:1.35}
+
+/* model */
+.controls{display:grid;gap:.9rem}
+.ctl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .8rem;align-items:center}
+.ctl label{font-size:.88rem}
+.ctl output{font-family:var(--f-mono);font-weight:600;font-size:.88rem;text-align:right;min-width:4.5rem}
+.ctl input[type=range]{grid-column:1 / -1;width:100%;accent-color:var(--fut)}
+.ctl .hint{grid-column:1/-1;font-size:.74rem;color:var(--muted);font-family:var(--f-mono)}
+.big{font-family:var(--f-display);font-weight:800;font-variation-settings:"wdth" 75;font-size:clamp(2.6rem,6vw,3.6rem);line-height:1}
+.big.neg{color:var(--bad)} .big.pos{color:var(--good)}
+.outrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.stat .v{font-family:var(--f-display);font-weight:800;font-variation-settings:"wdth" 80;font-size:1.7rem;line-height:1.05}
+.stat .l{font-size:.78rem;color:var(--muted);line-height:1.3;margin-top:.2rem}
+.btnrow{display:flex;flex-wrap:wrap;gap:.5rem}
+button{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.04em;padding:.45rem .7rem;border-radius:4px;border:1px solid var(--rule);background:var(--sunk);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stack{display:flex;height:2.2rem;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.stack div{display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:.72rem;color:#fff;white-space:nowrap;overflow:hidden;transition:flex-basis .25s}
+.stack .s-up{background:var(--good)} .stack .s-dn{background:var(--bad)} .stack .s-nt{background:var(--muted)}
+
+/* register */
+.claims{display:grid;gap:.8rem}
+.claim{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:1rem 1.1rem;display:grid;grid-template-columns:5.2rem minmax(0,1fr) 7rem;gap:.4rem 1rem;align-items:start}
+.claim.primary{border-color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
+.claim .id{font-family:var(--f-mono);font-weight:600;font-size:.85rem}
+.claim .txt{font-weight:600;line-height:1.35}
+.claim .meta{grid-column:2 / 4;font-size:.8rem;color:var(--muted);display:grid;gap:.25rem}
+.claim .pr{text-align:right}
+.claim .pr .v{font-family:var(--f-display);font-weight:800;font-size:1.6rem;font-variation-settings:"wdth" 80;line-height:1}
+.claim .pr td.r{white-space:nowrap}
+#schedBody td:nth-child(-n+2){white-space:nowrap}
+.pending{font-family:var(--f-mono);font-size:.7rem;color:var(--warn);text-transform:uppercase;letter-spacing:.06em}
+
+/* ledger */
+.ledger{font-family:var(--f-mono);font-size:.74rem;display:grid;gap:0;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--surface)}
+.lrow{display:grid;grid-template-columns:2.4rem 6.2rem 7.5rem minmax(0,1fr);gap:.8rem;padding:.5rem .8rem;border-top:1px solid var(--rule);align-items:baseline}
+.lrow:first-child{border-top:0;background:var(--sunk);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:.66rem}
+.lrow .h{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .s{overflow-wrap:anywhere}
+.verify{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center}
+#verifyOut{font-family:var(--f-mono);font-size:.78rem}
+
+details{border-top:1px solid var(--rule);padding-top:.7rem}
+summary{cursor:pointer;font-family:var(--f-mono);font-size:.76rem;letter-spacing:.05em;color:var(--muted)}
+
+footer{margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--rule);display:grid;gap:.6rem}
+
+@media (max-width:860px){
+  .mast{grid-template-columns:1fr}
+  .lines,.grid3{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}
+  .claim{grid-template-columns:4.4rem minmax(0,1fr)}
+  .claim .pr{grid-column:2;text-align:left}
+  .claim .meta{grid-column:1 / -1}
+  .lrow{grid-template-columns:2rem 5.4rem minmax(0,1fr)}
+  .lrow .t,.lrow .h{display:none}
+  .outrow{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.disclosures{padding-block:1rem;border-bottom:1px solid var(--rule);display:block}
+.disclosures p{max-width:62rem;font-size:.86rem;line-height:1.5;color:var(--ink)}
+.disclosures b{color:var(--ink)}
+.sdot{display:inline-block;width:.6rem;height:.6rem;border-radius:50%;margin-right:.45rem;transform:translateY(1px);border:1.5px solid var(--muted)}
+.sdot.dated{background:var(--good);border-color:var(--good)} .sdot.changed{background:var(--warn);border-color:var(--warn)} .sdot.narrowing{background:var(--bad);border-color:var(--bad)} .sdot.none{background:transparent}
+.pending{font-family:var(--f-mono);font-size:.7rem;color:var(--warn);text-transform:uppercase;letter-spacing:.06em}
+.panel{align-content:start}
+</style>
+<div class="wrap">
+
+<header class="mast">
+  <div>
+    <div class="eyebrow">Thesis tracker, not an initiation · Rocket Lab Corporation · NASDAQ: RKLB · v1</div>
+    <div class="ticker" aria-label="RKLB">RKL<span>B</span></div>
+    <h1 class="stance">Thesis intact. Timing risk: Neutron.</h1>
+    <p class="dek">Space Systems is 81% of revenue and grew 94% last quarter. Iridium adds a recurring network business once the deal closes. Neutron decides when the launch side scales. One filed launch target has already moved, and the second is under pressure.</p>
+    <div class="byline small muted">
+      <span>Yossi Guanish</span>
+      <span class="num">Written and priced Oct 8, 2026</span>
+      <span class="num">Priced at $68.40, Oct 8 close</span>
+    </div>
+  </div>
+  <aside class="board" aria-label="Status board">
+    <h3>Status board · as of Oct 8, 2026</h3>
+    <div class="brow"><span class="lamp good"></span><span>Thesis status</span><span class="bval">INTACT</span></div>
+    <div class="brow"><span class="lamp off"></span><span>Primary falsifier R-003</span><span class="bval">OPEN</span></div>
+    <div class="brow"><span class="lamp warn"></span><span>Neutron, latest filed target</span><span class="bval">PAD Q4 2026</span></div>
+    <div class="brow"><span class="lamp bad"></span><span>End of year launch window</span><span class="bval">NARROWING</span></div>
+    <div class="brow"><span class="lamp warn"></span><span>Shares Q/Q, common + preferred</span><span class="bval">+2.3%</span></div>
+    <div class="brow"><span class="lamp warn"></span><span>Iridium deal spread</span><span class="bval" id="boardSpread">…</span></div>
+    <div class="brow"><span class="lamp off"></span><span>Next read</span><span class="bval">Q3 10-Q · Nov</span></div>
+    <div class="brow"><span class="lamp off"></span><span>Version</span><span class="bval">v1 · Oct 8, 2026</span></div>
+  </aside>
+</header>
+
+<section class="disclosures" aria-label="Disclosures">
+  <p><b>Disclosures.</b> This is my own independent research, Yossi Guanish. As of Oct 8, 2026 I hold no position in Rocket Lab Corporation (RKLB) or Iridium Communications (IRDM) in my personal accounts: no shares, options or other derivatives. I have followed RKLB since early 2024 and have bought and sold it during that period. I received no compensation from Rocket Lab, Iridium, or any underwriter, sales agent or dealer for this page. The views here are my own and do not represent any fund or organization I am affiliated with. This is research, not investment advice.</p>
+</section>
+
+<nav class="toc" aria-label="Sections">
+  <ul>
+    <li><a href="#thesis">Thesis</a></li>
+    <li><a href="#checks">Three checks</a></li>
+    <li><a href="#neutron">Neutron</a></li>
+    <li><a href="#iridium">Iridium</a></li>
+    <li><a href="#value">Valuation</a></li>
+    <li><a href="#risks">Risks</a></li>
+    <li><a href="#register">Register</a></li>
+    <li><a href="#ledger">History</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ul>
+</nav>
+
+<!-- THESIS -->
+<section id="thesis">
+  <div class="sechead">
+    <div class="eyebrow">The thesis</div>
+    <h2>Three lines, one variant view, one way to be wrong</h2>
+  </div>
+  <div class="lines">
+    <div class="line">
+      <div class="k op num">$189.5M</div>
+      <p><b>Space Systems already carries the company.</b> Q2 2026 Space Systems revenue was $189.5M, up 94% year over year, and 81% of total revenue of $234.1M. Backlog is $2,355.9M: Space Systems $1,415.8M and Launch $940.2M, with about 45% due within 12 months.</p>
+    </div>
+    <div class="line">
+      <div class="k fut num" id="drawdown">−55%</div>
+      <p><b>Schedule news no longer moves the stock much.</b> RKLB sits <span id="ddText">55%</span> below its $151.00 intraday high of May 27, 2026, yet four Neutron updates moved it only −3.7% to +1.4% over two days. Neutron targets about 13,000 kg to low Earth orbit in its reusable configuration.</p>
+    </div>
+    <div class="line">
+      <div class="k op num">$495M</div>
+      <p><b>Iridium adds a recurring network business.</b> FY2025 revenue of $871.7M and OEBITDA of $495.3M. The deal is pending, with closing expected in mid 2027. Iridium's $1.775B Term Loan, carried as secured debt, stays outstanding and Rocket Lab USA, Inc. guarantees it at closing.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="callout">
+      <div class="eyebrow" style="margin-bottom:.35rem">Variant view</div>
+      <p>The filings show a pattern: a second half 2025 target that moved to Q4 2026, then a launch window that is narrowing. The market already treats Neutron as late; recent schedule updates barely moved the stock. We treat the date as timing risk on a thesis that stands on Space Systems and, after closing, Iridium. The date decides when launch scales. It does not decide whether the company works.</p>
+    </div>
+    <div class="callout bad">
+      <div class="eyebrow" style="margin-bottom:.35rem">What proves us wrong</div>
+      <p>A filing that discloses a thesis break: the Iridium merger terminated, Rocket Lab stating Neutron development is cancelled or suspended, or total backlog in a 10-Q more than 10% below the higher of the prior quarter and the trailing four quarter average. That is register entry <a href="#register">R-003</a>, the primary falsifier.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="checkhead"><h3>Revenue went from $62M in 2021 to $602M in 2025, including acquisitions</h3><span class="legend"><span><i style="background:var(--op)"></i>Reported</span><span><i style="background:var(--fut)"></i>Consensus</span></span></div>
+    <div class="chart" id="revChart"></div>
+    <p class="src">$M, GAAP total revenue, SEC XBRL company facts. LTM = four quarters through Jun 30, 2026 ($769.1M). Growth includes acquisitions, among them SolAero in 2022. FY2026E: S&amp;P Global consensus via StockAnalysis, 17 analysts, fetched Oct 8, 2026. Later years are not shown because no citable free source carries them.</p>
+  </div>
+</section>
+
+<!-- CHECKS -->
+<section id="checks">
+  <div class="sechead">
+    <div class="eyebrow">Three checks · eight filings</div>
+    <h2>The same three checks every quarter</h2>
+    <p class="muted">Shares outstanding. Cash spent running the business against cash spent building it. What the filings say about Neutron's schedule. Revenue is not one of the checks. Every filing cited is linked.</p>
+  </div>
+
+  <div class="panel">
+    <div class="checkhead"><h3>1 · Shares outstanding</h3><span class="chip warn">Dilution rising</span></div>
+    <div class="legend"><span><i style="background:var(--op)"></i>Common, cover page</span><span><i style="background:var(--fut)"></i>Common plus convertible preferred</span></div>
+    <div class="chart" id="sharesChart"></div>
+    <p class="small"><b id="sharesHead"></b> <span id="sharesBody"></span></p>
+    <p class="small muted">Why the cover count fell in early 2025: a trust holding Peter Beck's shares exchanged 50,951,250 common shares for the same number of Series A Convertible Participating Preferred shares. Agreed Dec 3, 2024 (<a href="https://www.sec.gov/Archives/edgar/data/1819994/000095017024133686/" target="_blank" rel="noopener">8-K</a>), closed Jan 7, 2025 (<a href="https://www.sec.gov/Archives/edgar/data/1819994/000162828025001137/" target="_blank" rel="noopener">8-K</a>). The trust converted 5,000,000 back to common on Jun 17, 2025 and another 5,000,000 on May 26, 2026, leaving 40,951,250 preferred at Jun 30, 2026. The blue line adds them back so the trend is like for like.</p>
+    <p class="small muted">Not yet on any cover: about 29.3M shares sold under the Aug 13, 2026 ATM agreement through Sep 15, 2026 (<a href="https://www.sec.gov/Archives/edgar/data/1819994/000175392626001769/" target="_blank" rel="noopener">8-K Sep 15, 2026</a>), which raised about $1.944B gross for the Iridium cash consideration.</p>
+    <p class="src">Entity common stock shares outstanding as of the date printed on each cover. Preferred outstanding from the 8-Ks and balance sheets cited. Excludes options, RSUs and convertible notes.</p>
+  </div>
+
+  <div class="panel">
+    <div class="checkhead"><h3>2 · Running the business vs building it</h3><span class="chip warn">Equity funded</span></div>
+    <div class="legend"><span><i style="background:var(--op)"></i>Operating cash used</span><span><i style="background:var(--fut)"></i>Building: purchases of property, equipment and software</span><span><i style="background:transparent;border:1.5px solid var(--good)"></i>ATM gross proceeds</span></div>
+    <div class="chart" id="cashChart"></div>
+    <p class="small"><b>1H 2026: $187.5M out, about $94M a quarter.</b> Operating use was $134.4M and building was $53.1M. Another $44.3M went to acquisitions, net of cash acquired. ATM sales raised $1,529.6M gross ($1,512.9M net of $16.7M costs) in the same six months, which covers the burn many times over and builds cash ahead of the Iridium closing.</p>
+    <p class="src">GAAP cash flow statement, $ thousands. Quarterly values derived as YTD in this filing less YTD in the prior filing of the same fiscal year. Q3 2024 uses the <a href="https://www.sec.gov/Archives/edgar/data/1819994/000095017024094122/" target="_blank" rel="noopener">Q2 2024 10-Q</a> for the six month figures.</p>
+  </div>
+
+  <div class="panel">
+    <div class="checkhead"><h3>3 · What the filings say about Neutron's schedule</h3><span class="chip bad">One target moved, one under pressure</span></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Filing</th><th>Filed</th><th>Neutron timing language</th></tr></thead>
+      <tbody id="schedBody"></tbody>
+    </table></div>
+    <p class="small">The FY2024 10-K set a second half 2025 target. None of the three 2025 10-Qs repeated a date. In Q3 2025 the Key Factors paragraph on Neutron dropped "consistent with our targeted timeline" for "to a successful initial launch" and added "further delays". The FY2025 10-K reset the target to Q4 2026 after the January tank rupture. The Q2 2026 10-Q restated the milestone as pad delivery in Q4 2026, a softer target than launch, and said the window for an end of year launch is narrowing. No new launch date has been filed.</p>
+    <p class="src">Quotes from MD&amp;A in each filing, searched in full text. Filing names link to the EDGAR filing index.</p>
+  </div>
+</section>
+
+<!-- NEUTRON -->
+<section id="neutron">
+  <div class="sechead">
+    <div class="eyebrow">Neutron · next quarter</div>
+    <h2>Four outcomes, and how the stock has reacted before</h2>
+    <p class="muted">A scenario table for the quarter ahead. The probabilities are mine, locked in the register as R-001, R-002 and R-004. The reaction column shows what history offers, which is thin.</p>
+  </div>
+  <div class="panel"><div class="tbl"><table>
+    <thead><tr><th>Outcome by the Q3 2026 10-Q or Dec 31, 2026</th><th>How a filing would show it</th><th>Closest precedent</th><th class="r">Probability</th></tr></thead>
+    <tbody id="stateBody"></tbody>
+  </table></div>
+  <p class="small" id="stateNote"></p>
+  </div>
+  <div class="panel">
+    <h3>Past Neutron news moved the stock less than you might think</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Event</th><th>Reaction day</th><th class="r">Day 1</th><th class="r">Two days</th></tr></thead>
+      <tbody>
+        <tr><td>Q3 2025 results: LC-3 moved to Q1 2026</td><td class="num">Nov 11, 2025</td><td class="r">−1.3%</td><td class="r">−3.7%</td></tr>
+        <tr><td>Stage 1 tank rupture disclosed (hardware event)</td><td class="num">Jan 21, 2026</td><td class="r">−1.5%</td><td class="r">−1.3%</td></tr>
+        <tr><td>FY2025 10-K: first launch reset to Q4 2026</td><td class="num">Feb 27, 2026</td><td class="r">−4.9%</td><td class="r">−2.3%</td></tr>
+        <tr><td>Q2 2026 10-Q: launch window narrowing</td><td class="num">Aug 11, 2026</td><td class="r">−0.0%</td><td class="r">+1.4%</td></tr>
+        <tr class="hl"><td>For scale: Electron flight failure</td><td class="num">Sep 19, 2023</td><td class="r">−7.5%</td><td class="r">−12.3%</td></tr>
+      </tbody>
+    </table></div>
+    <p class="src">Close to close from the prior session, Yahoo daily history fetched Oct 8, 2026. Reaction days assume the news came after the close or before the open; release times were not checked. Three of the four Neutron events landed with quarterly results, so each move mixes the Neutron news with the rest of the quarter. Four events is not a base rate.</p>
+  </div>
+  <p class="small muted">Coming in v2: cross vehicle base rates for first flight success and for schedule slips against first public targets, built from a stated reference class rule.</p>
+</section>
+
+<!-- IRIDIUM -->
+<section id="iridium">
+  <div class="sechead">
+    <div class="eyebrow">The Iridium acquisition · pending</div>
+    <h2>Recurring revenue, a collar, and guaranteed secured debt</h2>
+  </div>
+  <div class="grid2">
+    <div class="panel"><div class="tbl"><table><tbody>
+      <tr><td>Consideration per Iridium share</td><td>$27.00 cash plus RKLB stock at the exchange ratio</td></tr>
+      <tr><td>Exchange ratio</td><td>0.4000 if the RKLB price is $67.50 or less; $27.00 ÷ price between $67.50 and $112.50; 0.2400 at $112.50 or more</td></tr>
+      <tr><td>RKLB price used</td><td>10 day VWAP ending the second full trading day before closing</td></tr>
+      <tr><td>Most RKLB shares issuable</td><td class="num">~42.4M (0.4000 × 105,981,552 Iridium shares)</td></tr>
+      <tr><td>Value at signing</td><td class="num">$54.00 per share · $7.31B EV · 14.8× FY2025 OEBITDA</td></tr>
+      <tr><td>Iridium FY2025</td><td class="num">Revenue $871.7M · OEBITDA $495.3M</td></tr>
+      <tr><td>Iridium debt</td><td class="num">$1,774.7M borrowed under its Term Loan, carried as secured debt, due Sep 2030; net debt $1.59B at Jun 30, 2026, before Aireon</td></tr>
+      <tr><td>Financing</td><td>~$1.944B ATM (~29.3M shares); $3.6B bridge terminated Sep 15, 2026</td></tr>
+      <tr><td>Status</td><td>Iridium holders approved Sep 24, 2026. Regulatory approvals, including the FCC, remain. End Date Jun 28, 2027, extendable to Dec 28, 2027</td></tr>
+      <tr><td>Termination fee</td><td class="num">$223.62M payable by Iridium; no reverse fee payable by Rocket Lab</td></tr>
+    </tbody></table></div>
+    <p class="src"><a href="https://www.sec.gov/Archives/edgar/data/1819994/000175392626001639/" target="_blank" rel="noopener">424B3</a>; <a href="https://www.sec.gov/Archives/edgar/data/1819994/000175392626001769/" target="_blank" rel="noopener">RKLB 8-K Sep 15, 2026</a>; <a href="https://www.sec.gov/Archives/edgar/data/1418819/000141881926000045/" target="_blank" rel="noopener">IRDM Q2 2026 10-Q</a>; <a href="https://www.sec.gov/Archives/edgar/data/1418819/000095010326014464/" target="_blank" rel="noopener">IRDM 8-K Sep 24, 2026</a>.</p></div>
+    <div class="panel">
+      <h3>What it changes</h3>
+      <p>The risk moves from cash runway to leverage and integration. Iridium's term loans stay outstanding after closing, with a downstream guarantee from Rocket Lab USA, Inc. and a higher rate.</p>
+      <div class="callout op"><p class="small" id="collarNote"></p></div>
+      <div class="callout"><p class="small" id="spreadNote"></p></div>
+      <p class="small muted">There is no termination right tied to the RKLB price. Three stockholder suits over proxy disclosures were filed against Iridium and its board in New York (<a href="https://www.sec.gov/Archives/edgar/data/1418819/000095010326014197/" target="_blank" rel="noopener">IRDM 8-K Sep 18, 2026</a>). Their status after the vote is not yet confirmed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- VALUATION -->
+<section id="value">
+  <div class="sechead">
+    <div class="eyebrow">Valuation · pro forma for Iridium</div>
+    <h2>What the market is paying, built line by line</h2>
+    <p class="muted">No price target in v1. This shows what $68.40 implies once the deal closes, with every input sourced.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Shares at closing</h3>
+      <div class="tbl"><table><tbody id="shBody"></tbody></table></div>
+      <h3>Net debt at closing</h3>
+      <div class="tbl"><table><tbody id="cashBody"></tbody></table></div>
+      <p class="src">$M. Excludes ATM commissions, Rocket Lab's burn after Jun 30, 2026 (about $94M a quarter in 1H 2026), Iridium's cash flow and Aireon's own cash. Each quarter of burn to closing adds about $0.1B of net debt.</p>
+    </div>
+    <div class="panel">
+      <h3>Enterprise value and multiples</h3>
+      <div class="tbl"><table><tbody id="evBody"></tbody></table></div>
+      <p class="small">Context only: in the merger proxy, Evercore's selected companies analysis for standalone Rocket Lab applied 30× to 50× 2027E revenue and 20× to 40× 2028E revenue, against peers including NVIDIA and Palantir, for $61.22 to $99.03 and $53.10 to $101.69 a share. Evercore states that none of the selected companies is directly comparable. It is a fairness opinion range, not a target.</p>
+      <p class="src">Revenue: RKLB LTM $769.1M (XBRL) and IRDM LTM $884.2M (FY2025 $871.7M less 1H 2025 $431.8M plus 1H 2026 $444.3M), both through Jun 30, 2026. FY2026E: S&amp;P Global consensus via StockAnalysis, RKLB $962.3M (17 analysts, fetched Oct 8, 2026), IRDM $938.6M (3 analysts, updated Jul 30, 2026). LTM revenue excludes Aireon (acquired Jul 2, 2026) while its debt is included, which lifts the multiples slightly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section id="risks">
+  <div class="sechead">
+    <div class="eyebrow">Risk</div>
+    <h2>Most of the risk is company specific</h2>
+  </div>
+  <div class="grid3">
+    <div class="panel"><div class="stat"><div class="v num">3.68</div><div class="l">Beta vs SPY, daily simple returns on prices, 1 year to Sep 30, 2026. 2.65 over 2 years.</div></div></div>
+    <div class="panel"><div class="stat"><div class="v num">0.26</div><div class="l">One year R² vs SPY: about three quarters of daily moves are company specific</div></div></div>
+    <div class="panel"><div class="stat"><div class="v num">81%</div><div class="l">Space Systems share of Q2 2026 revenue</div></div></div>
+  </div>
+  <div class="panel"><div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Neutron schedule</td><td>Second half 2025 target missed; Q4 2026 target with the launch window "narrowing" (check 3)</td></tr>
+      <tr><td>Dilution</td><td>Common plus preferred up 26.7% from Feb 2025 to Aug 2026 (check 1); about 29.3M ATM shares since; up to ~42.4M shares for Iridium</td></tr>
+      <tr><td>ATM dependence</td><td>$1,529.6M gross ATM in 1H 2026 and ~$1.944B since Aug 13 fund the burn and the Iridium cash</td></tr>
+      <tr><td>Leverage after closing</td><td>$1,774.7M Iridium Term Loan borrowings, carried as secured debt, guaranteed by Rocket Lab USA, Inc. Aireon's debt is expected to be paid off at closing.</td></tr>
+      <tr><td>Deal completion</td><td>Regulatory approvals remain; End Date Jun 28, 2027; Iridium trades below the implied value (see Iridium)</td></tr>
+      <tr><td>Customer concentration</td><td>One government customer was 42% of 1H 2026 revenue</td></tr>
+      <tr><td>Delivery penalties</td><td>MDA contract: possible liquidated damages for late spacecraft buses</td></tr>
+      <tr><td>Litigation</td><td>Neutron securities class action dismissed with prejudice Apr 16, 2026, no appeal; derivative action dismissed May 28, 2026. Three merger disclosure suits against Iridium</td></tr>
+    </tbody>
+  </table></div>
+  <p class="src"><a href="https://www.sec.gov/Archives/edgar/data/1819994/000181999426000062/" target="_blank" rel="noopener">RKLB Q2 2026 10-Q</a> including Part II Item 1; <a href="https://www.sec.gov/Archives/edgar/data/1418819/000095010326014197/" target="_blank" rel="noopener">IRDM 8-K Sep 18, 2026</a>. Beta and R² computed from Yahoo daily closes, RKLB vs SPY.</p></div>
+</section>
+
+<!-- REGISTER -->
+<section id="register">
+  <div class="sechead">
+    <div class="eyebrow">Falsification register</div>
+    <h2>Written before the evidence arrives</h2>
+    <p class="muted">Each claim is settled by a single filing or announcement. Each carries my probability and one line of reasoning, locked Oct 8, 2026. Claims are never edited; a changed view is a new entry that references the old one.</p>
+  </div>
+  <p class="small mono" id="brierLine"></p>
+  <div class="claims" id="claims"></div>
+</section>
+
+<!-- LEDGER -->
+<section id="ledger">
+  <div class="sechead">
+    <div class="eyebrow">Version history</div>
+    <h2>Every update stays on the record</h2>
+    <p class="muted">Each version of this page is archived on archive.org on the day it goes up. Entries are only ever added, never edited. A wrong call stays here with its resolution beside it.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Version</th><th>Date</th><th>What changed</th><th>Archived copy</th></tr></thead>
+    <tbody><tr><td>v1</td><td class="num">Oct 8, 2026</td><td>Initial publication. Ten claims opened; eight quarters of filings read.</td><td id="anchor">Link added on posting day</td></tr></tbody>
+  </table></div>
+  <details><summary>Full entry log (${N} entries)</summary>
+    <div style="margin-top:.8rem;display:grid;gap:.6rem">
+      <div class="ledger" id="ledgerRows"></div>
+      <p class="small muted">Each entry is chained to the one before it, so any edit to a past entry is detectable. <button type="button" id="verifyBtn">Check the chain</button> <span id="verifyOut" class="muted"></span></p>
+    </div>
+  </details>
+  <details><summary>How an earnings season updates this page</summary>
+    <div class="prose small" style="margin-top:.8rem">
+      <p>Within 48 hours of each 10-Q or 10-K: the three checks are read and added; every open claim is checked against the filing; any claim the filing settles gets a resolution entry with the locator; the new version is archived.</p>
+    </div>
+  </details>
+</section>
+
+<!-- SOURCES -->
+<section id="sources">
+  <div class="sechead">
+    <div class="eyebrow">Sources and provenance</div>
+    <h2>Every number traces to a source</h2>
+  </div>
+  <div class="panel"><div class="tbl"><table>
+    <thead><tr><th>Figure group</th><th>Source</th><th>As of</th></tr></thead>
+    <tbody>
+      <tr><td>Cover shares, cash flows, ATM proceeds, segment revenue, backlog, Neutron language</td><td>RKLB 10-Qs and 10-Ks, 8 filings Q3 2024 to Q2 2026, linked in check 3; <a href="https://www.sec.gov/Archives/edgar/data/1819994/000095017024094122/" target="_blank" rel="noopener">Q2 2024 10-Q</a> for six month figures</td><td class="num">Read Oct 8, 2026</td></tr>
+      <tr><td>Preferred exchange and conversions</td><td><a href="https://www.sec.gov/Archives/edgar/data/1819994/000095017024133686/" target="_blank" rel="noopener">8-K Dec 3, 2024</a>; <a href="https://www.sec.gov/Archives/edgar/data/1819994/000162828025001137/" target="_blank" rel="noopener">8-K Jan 7, 2025</a>; balance sheets</td><td class="num">Read Oct 8, 2026</td></tr>
+      <tr><td>Iridium terms, collar, termination, Evercore analysis</td><td><a href="https://www.sec.gov/Archives/edgar/data/1819994/000175392626001639/" target="_blank" rel="noopener">424B3</a></td><td class="num">Read Oct 8, 2026</td></tr>
+      <tr><td>ATM, bridge, credit agreement amendment</td><td><a href="https://www.sec.gov/Archives/edgar/data/1819994/000175392626001769/" target="_blank" rel="noopener">RKLB 8-K Sep 15, 2026</a></td><td class="num">Read Oct 8, 2026</td></tr>
+      <tr><td>Iridium revenue, debt, Aireon, vote, suits</td><td><a href="https://www.sec.gov/Archives/edgar/data/1418819/000141881926000045/" target="_blank" rel="noopener">IRDM Q2 2026 10-Q</a>; 8-Ks <a href="https://www.sec.gov/Archives/edgar/data/1418819/000095010326014197/" target="_blank" rel="noopener">Sep 18</a> and <a href="https://www.sec.gov/Archives/edgar/data/1418819/000095010326014464/" target="_blank" rel="noopener">Sep 24, 2026</a>; <a href="https://www.sec.gov/Archives/edgar/data/1418819/000141881926000008/" target="_blank" rel="noopener">Q4 2025 release</a></td><td class="num">Read Oct 8, 2026</td></tr>
+      <tr><td>Prices, reactions, beta, $151.00 high</td><td>Yahoo daily history for RKLB, SPY, IRDM</td><td class="num">Fetched Oct 8, 2026</td></tr>
+      <tr><td>Consensus revenue FY2026E</td><td><a href="https://stockanalysis.com/stocks/rklb/forecast/">S&amp;P Global via StockAnalysis</a></td><td class="num">Fetched Oct 8 (RKLB), updated Jul 30 (IRDM)</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<footer class="small muted">
+  <p>Catalyst calendar: Q3 2026 results and 10-Q, about Nov 2026 (R-004, R-006 to R-010). Neutron pad delivery, filed target Q4 2026. Dec 31, 2026: R-001 settles. Jun 28, 2027: Iridium End Date (R-005).</p>
+  <p>Research by Yossi Guanish. Not investment advice. No position in RKLB or IRDM in my personal accounts as of Oct 8, 2026.</p>
+  <p>© 2026 Yossi Guanish. All rights reserved. Analysis, text and charts may be quoted with attribution and a link to this page. Filing data is from public SEC records.</p>
+</footer>
+</div>
+
+<script>
+const DATA = {"quarters": [{"period": "Q3 2024", "form": "10-Q", "acc": "0000950170-24-125529", "filed": "2024-11-12", "shares": 499911078, "asof": "2024-11-07", "pref": 0, "op": -30915, "capex": -11018, "atm": 0, "sched": "none", "text": "No Neutron launch timing. Neutron appears only as a growth driver.", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000095017024125529/"}, {"period": "Q4 2024", "form": "10-K", "acc": "0001628280-25-008724", "filed": "2025-02-27", "shares": 453545095, "asof": "2025-02-21", "pref": 50951250, "op": -2387, "capex": -21554, "atm": 0, "sched": "dated", "text": "“we continue to plan for the debut launch of Neutron in the second half of 2025”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000162828025008724/"}, {"period": "Q1 2025", "form": "10-Q", "acc": "0001628280-25-023857", "filed": "2025-05-08", "shares": 461432393, "asof": "2025-05-05", "pref": 50951250, "op": -54225, "capex": -28677, "atm": 92806, "sched": "none", "text": "No launch date. Key Factors: “consistent with our targeted timeline”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000162828025023857/"}, {"period": "Q2 2025", "form": "10-Q", "acc": "0001628280-25-038936", "filed": "2025-08-07", "shares": 479355713, "asof": "2025-08-04", "pref": 45951250, "op": -23242, "capex": -32042, "atm": 303841, "sched": "none", "text": "No launch date. Key Factors unchanged: “consistent with our targeted timeline”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000162828025038936/"}, {"period": "Q3 2025", "form": "10-Q", "acc": "0001819994-25-000021", "filed": "2025-11-10", "shares": 534156333, "asof": "2025-11-05", "pref": 45951250, "op": -23523, "capex": -45912, "atm": 468806, "sched": "changed", "text": "No launch date. Key Factors rewritten: “to a successful initial launch” replaces the targeted timeline; adds “further delays”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999425000021/"}, {"period": "Q4 2025", "form": "10-K", "acc": "0001819994-26-000013", "filed": "2026-02-26", "shares": 567445449, "asof": "2026-02-20", "pref": 45951250, "op": -64531, "capex": -49654, "atm": 280604, "sched": "dated", "text": "Jan 21, 2026 Stage 1 tank rupture. “Neutron’s first launch is now targeted for Q4 2026”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000013/"}, {"period": "Q1 2026", "form": "10-Q", "acc": "0001819994-26-000028", "filed": "2026-05-07", "shares": 578750990, "asof": "2026-04-30", "pref": 45951250, "op": -50332, "capex": -27065, "atm": 450347, "sched": "dated", "text": "“on track for its debut launch later this year”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000028/"}, {"period": "Q2 2026", "form": "10-Q", "acc": "0001819994-26-000062", "filed": "2026-08-10", "shares": 598350482, "asof": "2026-08-05", "pref": 40951250, "op": -84075, "capex": -26047, "atm": 1079292, "sched": "narrowing", "text": "“target delivery of Neutron to the launch pad in Q4 2026”; “the window for an end-of-year launch date is narrowing”", "url": "https://www.sec.gov/Archives/edgar/data/1819994/000181999426000062/"}], "claims": [{"id": "R-001", "kind": "catalyst", "primary": false, "prob": 0.15, "claim": "Neutron makes its first launch attempt (liftoff) on or before Dec 31, 2026, US Eastern time.", "settles": "Company launch announcement or 8-K. If none by Dec 31, 2026, FALSE; confirmed in the FY2026 10-K.", "why": "One filed target already missed. The Q2 10-Q swapped the launch target for pad delivery in Q4 and called the window narrowing. Pad integration takes weeks to months, and about 12 weeks remain."}, {"id": "R-002", "kind": "catalyst", "primary": false, "prob": 0.65, "claim": "If Neutron's first liftoff happens on or before Dec 31, 2026, that flight reaches orbit: Rocket Lab states the upper stage or payload reached orbit.", "settles": "Rocket Lab's flight statement, confirmed in the next 10-Q. Not scored if there is no liftoff by Dec 31, 2026.", "why": "No sourced base rate yet; cross vehicle base rates come in v2. A new engine and a reusable first stage pull the odds down; Electron heritage pulls them back up."}, {"id": "R-003", "kind": "thesis", "primary": true, "prob": 0.85, "claim": "No filing through the Q2 2027 10-Q discloses a thesis break: the Iridium merger terminated; Rocket Lab stating Neutron development is cancelled or suspended; or total backlog in a 10-Q more than 10% below the higher of the prior quarter and the trailing four quarter average.", "settles": "FALSE on the first filing that discloses any of the three. TRUE when the Q2 2027 10-Q is filed with none.", "why": "Three ways to break, each unlikely. Backlog: no quarter in our 8 filings fell more than 10%, the worst was 6.7% in Q2 2025, and R-006 puts 75% on Q3 backlog rising. Neutron: cancellation after this much spend is close to zero. Iridium: holders approved and financing is done, so termination is mainly regulatory. Combined, about 85%."}, {"id": "R-004", "kind": "disclosure", "primary": false, "prob": 0.55, "claim": "The Q3 2026 10-Q names 2027 or later as the target for Neutron’s first launch or for its delivery to the pad.", "settles": "Q3 2026 10-Q, MD&A. TRUE if 2027 or later is named for launch or pad delivery, since launch cannot come before pad delivery. FALSE otherwise, including silence.", "why": "After calling the window narrowing in August, the November 10-Q is the last filing before year end. Leaving a stale Q4 2026 target in it is harder to defend than restating it."}, {"id": "R-005", "kind": "deal", "primary": false, "prob": 0.7, "claim": "The Iridium acquisition closes on or before Jun 28, 2027, the initial End Date.", "settles": "Closing date as stated in Rocket Lab's Item 2.01 8-K.", "why": "Holder approval and financing are done. FCC approval for the license transfer remains, guidance is mid 2027, and the End Date sits right at that guidance. The 13.5% deal spread says the market sees risk or delay too."}, {"id": "R-006", "kind": "Q3 10-Q", "primary": false, "prob": 0.75, "claim": "Q3 2026 10-Q total backlog is above $2,355.9M (the Jun 30, 2026 level).", "settles": "Q3 2026 10-Q backlog disclosure.", "why": "Backlog rose in 5 of the last 7 quarters and in each of the last three. The Jul 21 Space Force suborbital contract (total potential value $266M, including options) lands in Q3, though revenue burn can still offset it."}, {"id": "R-007", "kind": "Q3 10-Q", "primary": false, "prob": 0.25, "claim": "Space Systems is at least 80% of total revenue in Q3 2026.", "settles": "Q3 2026 10-Q segment revenue table.", "why": "Space Systems cleared 80% once in five quarters, in Q2 2026. Acquired revenue stays, so Q3 lands between about 70% and 81%. We sit at the low end."}, {"id": "R-008", "kind": "Q3 10-Q", "primary": false, "prob": 0.2, "claim": "The Q3 2026 10-Q cover shows at least 635,000,000 common shares outstanding.", "settles": "Q3 2026 10-Q cover page. About 627.65M were known by Sep 15, 2026 (Aug 5 cover plus ~29.3M ATM shares; the Aug 13 ATM program was fully sold).", "why": "About 627.65M shares are known. The Aug 13 ATM program, about $1.944B, was fully sold by Sep 15, and no new program has been filed. Clearing 635M needs about 7.35M more from preferred conversions and equity plan issuance before the cover date."}, {"id": "R-009", "kind": "Q3 10-Q", "primary": false, "prob": 0.55, "claim": "Operating cash used in Q3 2026 is larger than Q2 2026’s $84,075K.", "settles": "Q3 2026 10-Q cash flow statement, 9M less 6M.", "why": "Q2 was a record. New highs came in 3 of the last 7 quarters, and Iridium deal costs expensed in Q3 push the number up."}, {"id": "R-010", "kind": "Q3 10-Q", "primary": false, "prob": 0.65, "claim": "Purchases of property, equipment and software in Q3 2026 exceed Q2 2026’s $26,047K.", "settles": "Q3 2026 10-Q cash flow statement, 9M less 6M.", "why": "Q2 capex was low by recent standards. Capex beat $26,047K in 5 of the 7 prior quarters."}], "ledger": [{"entry": {"seq": 1, "type": "publish", "date": "2026-10-08", "version": "v1", "note": "Initial publication as a thesis tracker, not an initiation. Priced at the Oct 8, 2026 close of $68.40 (Yahoo daily history and StockAnalysis, fetched Oct 8, 2026).", "price": 68.4}, "prev": "0000000000000000000000000000000000000000000000000000000000000000", "hash": "b7641eda04e91495ece67bcdcdc13f667130672ace8de6d9dbe7ee452b0c0b92"}, {"entry": {"seq": 2, "type": "claim_open", "date": "2026-10-08", "id": "R-001", "claim": "Neutron makes its first launch attempt (liftoff) on or before Dec 31, 2026, US Eastern time.", "prob": 0.15, "why": "One filed target already missed. The Q2 10-Q swapped the launch target for pad delivery in Q4 and called the window narrowing. Pad integration takes weeks to months, and about 12 weeks remain.", "settles": "Company launch announcement or 8-K. If none by Dec 31, 2026, FALSE; confirmed in the FY2026 10-K.", "primary": false}, "prev": "b7641eda04e91495ece67bcdcdc13f667130672ace8de6d9dbe7ee452b0c0b92", "hash": "12d8f4729be94a9e037d733873f5471a5d5ac3b5c5b0d78a1ddd0c33efc3abea"}, {"entry": {"seq": 3, "type": "claim_open", "date": "2026-10-08", "id": "R-002", "claim": "If Neutron's first liftoff happens on or before Dec 31, 2026, that flight reaches orbit: Rocket Lab states the upper stage or payload reached orbit.", "prob": 0.65, "why": "No sourced base rate yet; cross vehicle base rates come in v2. A new engine and a reusable first stage pull the odds down; Electron heritage pulls them back up.", "settles": "Rocket Lab's flight statement, confirmed in the next 10-Q. Not scored if there is no liftoff by Dec 31, 2026.", "primary": false}, "prev": "12d8f4729be94a9e037d733873f5471a5d5ac3b5c5b0d78a1ddd0c33efc3abea", "hash": "db2099b1ade470a01dbf664d439afeaf9127b81155390b47ae1a39d28fb6c8f4"}, {"entry": {"seq": 4, "type": "claim_open", "date": "2026-10-08", "id": "R-003", "claim": "No filing through the Q2 2027 10-Q discloses a thesis break: the Iridium merger terminated; Rocket Lab stating Neutron development is cancelled or suspended; or total backlog in a 10-Q more than 10% below the higher of the prior quarter and the trailing four quarter average.", "prob": 0.85, "why": "Three ways to break, each unlikely. Backlog: no quarter in our 8 filings fell more than 10%, the worst was 6.7% in Q2 2025, and R-006 puts 75% on Q3 backlog rising. Neutron: cancellation after this much spend is close to zero. Iridium: holders approved and financing is done, so termination is mainly regulatory. Combined, about 85%.", "settles": "FALSE on the first filing that discloses any of the three. TRUE when the Q2 2027 10-Q is filed with none.", "primary": true}, "prev": "db2099b1ade470a01dbf664d439afeaf9127b81155390b47ae1a39d28fb6c8f4", "hash": "6c54d3e4b003cb69d6caffeae81516dc56de93e19fefdf02c341009810935610"}, {"entry": {"seq": 5, "type": "claim_open", "date": "2026-10-08", "id": "R-004", "claim": "The Q3 2026 10-Q names 2027 or later as the target for Neutron’s first launch or for its delivery to the pad.", "prob": 0.55, "why": "After calling the window narrowing in August, the November 10-Q is the last filing before year end. Leaving a stale Q4 2026 target in it is harder to defend than restating it.", "settles": "Q3 2026 10-Q, MD&A. TRUE if 2027 or later is named for launch or pad delivery, since launch cannot come before pad delivery. FALSE otherwise, including silence.", "primary": false}, "prev": "6c54d3e4b003cb69d6caffeae81516dc56de93e19fefdf02c341009810935610", "hash": "7cafd52f80d860e73771f638b150c30977e4370c45f23572794f55ab5e7059b2"}, {"entry": {"seq": 6, "type": "claim_open", "date": "2026-10-08", "id": "R-005", "claim": "The Iridium acquisition closes on or before Jun 28, 2027, the initial End Date.", "prob": 0.7, "why": "Holder approval and financing are done. FCC approval for the license transfer remains, guidance is mid 2027, and the End Date sits right at that guidance. The 13.5% deal spread says the market sees risk or delay too.", "settles": "Closing date as stated in Rocket Lab's Item 2.01 8-K.", "primary": false}, "prev": "7cafd52f80d860e73771f638b150c30977e4370c45f23572794f55ab5e7059b2", "hash": "392e00ce635888aec3c3efe0cefc82127c286212dcc290ffc2be07e5250e7720"}, {"entry": {"seq": 7, "type": "claim_open", "date": "2026-10-08", "id": "R-006", "claim": "Q3 2026 10-Q total backlog is above $2,355.9M (the Jun 30, 2026 level).", "prob": 0.75, "why": "Backlog rose in 5 of the last 7 quarters and in each of the last three. The Jul 21 Space Force suborbital contract (total potential value $266M, including options) lands in Q3, though revenue burn can still offset it.", "settles": "Q3 2026 10-Q backlog disclosure.", "primary": false}, "prev": "392e00ce635888aec3c3efe0cefc82127c286212dcc290ffc2be07e5250e7720", "hash": "2f41ca998efd89096ff2408044060ffeacc1fab543faecc15ecd084998710c2e"}, {"entry": {"seq": 8, "type": "claim_open", "date": "2026-10-08", "id": "R-007", "claim": "Space Systems is at least 80% of total revenue in Q3 2026.", "prob": 0.25, "why": "Space Systems cleared 80% once in five quarters, in Q2 2026. Acquired revenue stays, so Q3 lands between about 70% and 81%. We sit at the low end.", "settles": "Q3 2026 10-Q segment revenue table.", "primary": false}, "prev": "2f41ca998efd89096ff2408044060ffeacc1fab543faecc15ecd084998710c2e", "hash": "fb9f6ea4afef87f101ce30f7efbd0fa06e9a86f4f6877f3a6b96620438434f00"}, {"entry": {"seq": 9, "type": "claim_open", "date": "2026-10-08", "id": "R-008", "claim": "The Q3 2026 10-Q cover shows at least 635,000,000 common shares outstanding.", "prob": 0.2, "why": "About 627.65M shares are known. The Aug 13 ATM program, about $1.944B, was fully sold by Sep 15, and no new program has been filed. Clearing 635M needs about 7.35M more from preferred conversions and equity plan issuance before the cover date.", "settles": "Q3 2026 10-Q cover page. About 627.65M were known by Sep 15, 2026 (Aug 5 cover plus ~29.3M ATM shares; the Aug 13 ATM program was fully sold).", "primary": false}, "prev": "fb9f6ea4afef87f101ce30f7efbd0fa06e9a86f4f6877f3a6b96620438434f00", "hash": "2912b156ad5b1a89ced7f8cb05814562ea464573f1278ba94f8ef4c54428bea1"}, {"entry": {"seq": 10, "type": "claim_open", "date": "2026-10-08", "id": "R-009", "claim": "Operating cash used in Q3 2026 is larger than Q2 2026’s $84,075K.", "prob": 0.55, "why": "Q2 was a record. New highs came in 3 of the last 7 quarters, and Iridium deal costs expensed in Q3 push the number up.", "settles": "Q3 2026 10-Q cash flow statement, 9M less 6M.", "primary": false}, "prev": "2912b156ad5b1a89ced7f8cb05814562ea464573f1278ba94f8ef4c54428bea1", "hash": "c87bfc4471497c42bf1c20703241f793472f480f44020a41e7578fb469263035"}, {"entry": {"seq": 11, "type": "claim_open", "date": "2026-10-08", "id": "R-010", "claim": "Purchases of property, equipment and software in Q3 2026 exceed Q2 2026’s $26,047K.", "prob": 0.65, "why": "Q2 capex was low by recent standards. Capex beat $26,047K in 5 of the 7 prior quarters.", "settles": "Q3 2026 10-Q cash flow statement, 9M less 6M.", "primary": false}, "prev": "c87bfc4471497c42bf1c20703241f793472f480f44020a41e7578fb469263035", "hash": "5c9826d880e3360c6dbd8721008bbe0189fbb291b49741ff70be38ab8b405785"}, {"entry": {"seq": 12, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q3 2024", "accession": "0000950170-24-125529", "shares": 499911078, "shares_asof": "2024-11-07", "preferred": 0, "op_k": -30915, "capex_k": -11018, "atm_gross_k": 0, "neutron_timing": "none"}, "prev": "5c9826d880e3360c6dbd8721008bbe0189fbb291b49741ff70be38ab8b405785", "hash": "a1efc711eda9438946ba4f0c7b49e447e1bb4dd5bb65400845177b77d9d24eae"}, {"entry": {"seq": 13, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q4 2024", "accession": "0001628280-25-008724", "shares": 453545095, "shares_asof": "2025-02-21", "preferred": 50951250, "op_k": -2387, "capex_k": -21554, "atm_gross_k": 0, "neutron_timing": "dated"}, "prev": "a1efc711eda9438946ba4f0c7b49e447e1bb4dd5bb65400845177b77d9d24eae", "hash": "62c67af599270f52fea7a1f249f1727b15b4fc8e8950304cf70f46957fe4f20f"}, {"entry": {"seq": 14, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q1 2025", "accession": "0001628280-25-023857", "shares": 461432393, "shares_asof": "2025-05-05", "preferred": 50951250, "op_k": -54225, "capex_k": -28677, "atm_gross_k": 92806, "neutron_timing": "none"}, "prev": "62c67af599270f52fea7a1f249f1727b15b4fc8e8950304cf70f46957fe4f20f", "hash": "c81e7699a130cf170d31d67858a15ed2ac5a202cbab7b1fc0ed0626738d86411"}, {"entry": {"seq": 15, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q2 2025", "accession": "0001628280-25-038936", "shares": 479355713, "shares_asof": "2025-08-04", "preferred": 45951250, "op_k": -23242, "capex_k": -32042, "atm_gross_k": 303841, "neutron_timing": "none"}, "prev": "c81e7699a130cf170d31d67858a15ed2ac5a202cbab7b1fc0ed0626738d86411", "hash": "7612a39c47a0f063840cb8a603669196a8679d84a6af17334aa6db77d4c08c63"}, {"entry": {"seq": 16, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q3 2025", "accession": "0001819994-25-000021", "shares": 534156333, "shares_asof": "2025-11-05", "preferred": 45951250, "op_k": -23523, "capex_k": -45912, "atm_gross_k": 468806, "neutron_timing": "changed"}, "prev": "7612a39c47a0f063840cb8a603669196a8679d84a6af17334aa6db77d4c08c63", "hash": "a7cea0c43ddc08ac2970eefab79be69767d0bf0c1ccccc1553da1a634ab1e995"}, {"entry": {"seq": 17, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q4 2025", "accession": "0001819994-26-000013", "shares": 567445449, "shares_asof": "2026-02-20", "preferred": 45951250, "op_k": -64531, "capex_k": -49654, "atm_gross_k": 280604, "neutron_timing": "dated"}, "prev": "a7cea0c43ddc08ac2970eefab79be69767d0bf0c1ccccc1553da1a634ab1e995", "hash": "5e763c4c30d9c76a257293e4262ae6fa2120bf3483133397939c3e34eaa6df08"}, {"entry": {"seq": 18, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q1 2026", "accession": "0001819994-26-000028", "shares": 578750990, "shares_asof": "2026-04-30", "preferred": 45951250, "op_k": -50332, "capex_k": -27065, "atm_gross_k": 450347, "neutron_timing": "dated"}, "prev": "5e763c4c30d9c76a257293e4262ae6fa2120bf3483133397939c3e34eaa6df08", "hash": "a68a5d4117f585aa26b8bc6d65cbaa2bd966d1d8df5a4e9a4ade0a00d2490434"}, {"entry": {"seq": 19, "type": "quarter_read", "date": "2026-10-08", "backfill": true, "period": "Q2 2026", "accession": "0001819994-26-000062", "shares": 598350482, "shares_asof": "2026-08-05", "preferred": 40951250, "op_k": -84075, "capex_k": -26047, "atm_gross_k": 1079292, "neutron_timing": "narrowing"}, "prev": "a68a5d4117f585aa26b8bc6d65cbaa2bd966d1d8df5a4e9a4ade0a00d2490434", "hash": "b11b4925fcf7084c4bbddcafe9f843384cd67acadf518b98aca16a52993cd0de"}], "head": "b11b4925fcf7084c4bbddcafe9f843384cd67acadf518b98aca16a52993cd0de", "val": {"spot": 68.4, "ratio": 0.3947, "shares": [["Common, cover page Aug 5, 2026", 598350482, "Q2 2026 10-Q cover"], ["Series A preferred, convertible 1:1, Jun 30, 2026", 40951250, "Q2 2026 10-Q balance sheet"], ["ATM shares sold Aug 13 to Sep 15, 2026 (approx.)", 29300000, "8-K Sep 15, 2026"], ["Iridium stock consideration at 0.3947 × 105,981,552", 41830919, "424B3 collar; record date shares"]], "sh_total": 710432651, "cash": [["RKLB cash and marketable securities, Jun 30, 2026", 2387.59, "Q2 2026 10-Q balance sheet"], ["RKLB convertible notes and borrowings", -14.844999999999999, "Q2 2026 10-Q balance sheet"], ["ATM gross proceeds Aug 13 to Sep 15, 2026", 1944.0, "8-K Sep 15, 2026"], ["Iridium cash consideration, $27.00 × record date shares", -2861.501904, "424B3"], ["Iridium net debt, Jun 30, 2026 (term loan $1,774.7M less cash $184.2M)", -1590.486, "IRDM Q2 2026 10-Q"], ["Aireon debt assumed Jul 2, 2026 (seller loan $183.4M, term loans $154.7M)", -338.1, "IRDM Q2 2026 10-Q"], ["Aireon cash paid at closing, half of ~$366.7M ($100M from Iridium's revolver)", -183.35, "IRDM Q2 2026 10-Q"]], "net_cash": -656.6929040000002, "mcap": 48593.5933284, "ev": 49250.2862324, "ltm": 1653.3000000000002, "fy26": 1900.9, "ev_ltm": 29.789080162341982, "ev_fy26": 25.908930628860013, "irdm_px": 47.56, "implied": 53.99748, "deal_costs": 247.236, "ev_c": 49497.5222324, "ev_c_ltm": 29.93862108050565, "ev_c_fy26": 26.038993230785415, "spread": 0.1353549201009252}};
+const $ = s => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const fmtSPct = (x,d=1) => (x>0?"+":x<0?"−":"")+Math.abs(x*100).toFixed(d)+"%";
+const fmtM = k => "$"+(Math.abs(k)/1000).toFixed(1)+"M";
+const svg=(w,h,inner)=>`<svg viewBox="0 0 ${w} ${h}" role="img" xmlns="${NS}">${inner}</svg>`;
+const Q=DATA.quarters, V=DATA.val;
+
+/* revenue */
+(function(){
+  const rows=[["’20",35.2,"a"],["’21",62.2,"a"],["’22",211.0,"a"],["’23",244.6,"a"],["’24",436.2,"a"],["’25",601.8,"a"],["LTM",769.1,"a"],["’26E",962.3,"e"]];
+  const W=720,H=240,L=40,R=10,T=20,B=28,max=1000,bw=(W-L-R)/rows.length; let g="";
+  [0,250,500,750,1000].forEach(v=>{const y=T+(H-T-B)*(1-v/max);g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${v}</text>`});
+  rows.forEach((r,i)=>{const x=L+i*bw+bw*.2,w=bw*.6,h=(H-T-B)*r[1]/max,y=H-B-h,cls=r[2]==="a"?"op":"fut";
+    g+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" class="${cls}" fill-opacity="${r[2]==="a"?1:.6}" rx="1.5"/><text x="${x+w/2}" y="${y-5}" text-anchor="middle" class="ink">${Math.round(r[1]).toLocaleString()}</text><text x="${x+w/2}" y="${H-10}" text-anchor="middle">${r[0]}</text>`});
+  $("#revChart").innerHTML=svg(W,H,g);
+})();
+
+/* shares */
+(function(){
+  const W=720,H=250,L=50,R=40,T=26,B=46,lo=420e6,hi=660e6,n=Q.length,step=(W-L-R)/(n-1),y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo)); let g="";
+  [450,500,550,600,650].forEach(v=>{g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v*1e6)}" y2="${y(v*1e6)}"/><text x="${L-6}" y="${y(v*1e6)+4}" text-anchor="end">${v}M</text>`});
+  const P1=Q.map((q,i)=>[L+i*step,y(q.shares)]), P2=Q.map((q,i)=>[L+i*step,y(q.shares+q.pref)]);
+  g+=`<polyline points="${P2.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--fut)" stroke-width="2" stroke-dasharray="5 3"/>`;
+  g+=`<polyline points="${P1.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--op)" stroke-width="2"/>`;
+  Q.forEach((q,i)=>{const [x,y1]=P1[i],y2=P2[i][1];
+    if(q.pref) g+=`<circle cx="${x}" cy="${y2}" r="3" fill="var(--fut)"><title>${q.period}: ${(q.shares+q.pref).toLocaleString()} common plus preferred</title></circle><text x="${x}" y="${y2-8}" text-anchor="middle" class="fut">${((q.shares+q.pref)/1e6).toFixed(1)}</text>`;
+    g+=`<a href="${q.url}" target="_blank" rel="noopener"><circle cx="${x}" cy="${y1}" r="${i===n-1?5:4}" fill="var(--surface)" stroke="var(--op)" stroke-width="2"><title>${q.period} ${q.form}: ${q.shares.toLocaleString()} common as of ${q.asof}</title></circle></a>`;
+    g+=`<text x="${x}" y="${y1+(q.pref?18:-10)}" text-anchor="middle" class="ink">${(q.shares/1e6).toFixed(1)}</text>`;
+    g+=`<text x="${x}" y="${H-24}" text-anchor="middle">${q.period.replace(" 20","’")}</text>`;
+    if(i>0){const c=(q.shares+q.pref)/(Q[i-1].shares+Q[i-1].pref)-1;g+=`<text x="${x}" y="${H-8}" text-anchor="middle" class="${c>0.05?"bad":"warn"}">${fmtSPct(c)}</text>`}});
+  $("#sharesChart").innerHTML=svg(W,H,g);
+  const a=Q[1],z=Q[Q.length-1],A=a.shares+a.pref,Z=z.shares+z.pref;
+  $("#sharesHead").textContent=`Common plus preferred went from ${(A/1e6).toFixed(1)}M to ${(Z/1e6).toFixed(1)}M, up ${((Z/A-1)*100).toFixed(1)}%, between the Feb 21, 2025 and Aug 5, 2026 covers.`;
+  $("#sharesBody").textContent=`Common alone shows +${((z.shares/a.shares-1)*100).toFixed(1)}% on the same dates, overstated by the preferred conversions. The largest step was Q3 2025, ${fmtSPct((Q[4].shares+Q[4].pref)/(Q[3].shares+Q[3].pref)-1)}. Percentages under the axis use the combined count.`;
+})();
+
+/* cash */
+(function(){
+  const W=720,H=270,L=50,R=14,T=24,B=40,sMax=120e3,bw=(W-L-R)/Q.length,base=H-B,yS=v=>base-(base-T)*v/sMax; let g="";
+  [0,40,80,120].forEach(v=>{g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${yS(v*1e3)}" y2="${yS(v*1e3)}"/><text x="${L-6}" y="${yS(v*1e3)+4}" text-anchor="end">${v}M</text>`});
+  Q.forEach((q,i)=>{const x=L+i*bw+bw*.22,w=bw*.56,o=-q.op,c=-q.capex,yo=yS(o),yc=yS(o+c);
+    g+=`<rect x="${x}" y="${yo}" width="${w}" height="${base-yo}" class="op" rx="1"><title>${q.period}: operating ${fmtM(q.op)}</title></rect><rect x="${x}" y="${yc}" width="${w}" height="${yo-yc}" class="fut" rx="1"><title>${q.period}: building ${fmtM(q.capex)}</title></rect>`;
+    g+=`<text x="${x+w/2}" y="${yc-6}" text-anchor="middle" class="ink">${((o+c)/1000).toFixed(0)}</text><text x="${x+w/2}" y="${H-22}" text-anchor="middle">${q.period.replace(" 20","’")}</text><text x="${x+w/2}" y="${H-6}" text-anchor="middle" class="good">+${(q.atm/1000).toFixed(0)}</text>`});
+  g+=`<text x="${L-6}" y="${H-6}" text-anchor="end" class="good">ATM</text>`;
+  $("#cashChart").innerHTML=svg(W,H,g);
+})();
+
+/* schedule table */
+$("#schedBody").innerHTML=Q.map(q=>`<tr><td><span class="sdot ${q.sched}"></span><a href="${q.url}" target="_blank" rel="noopener">${q.period.replace("Q4 ","FY")} ${q.form}</a></td><td class="num">${q.filed}</td><td>${q.text}</td></tr>`).join("");
+
+/* Neutron states */
+(function(){
+  const C=Object.fromEntries(DATA.claims.map(c=>[c.id,c]));
+  const states=[
+    ["Flies by Dec 31 and reaches orbit","Launch announcement; flight report","None for Neutron"],
+    ["Flies by Dec 31, does not reach orbit","Launch announcement; flight report","Electron failure, Sep 2023: −12.3% over two days"],
+    ["Q3 10-Q names 2027 or later (R-004)","MD&A Neutron update","Four schedule updates: −3.7% to +1.4% over two days"],
+    ["No flight, no new date","10-Q keeps Q4 2026 language","None"]];
+  const pF=C["R-001"].prob,pO=C["R-002"].prob,p4=C["R-004"].prob;
+  const ready=pF!==null&&pO!==null&&p4!==null, bad=ready&&pF+p4>1;
+  const probs=ready&&!bad?[pF*pO,pF*(1-pO),p4,1-pF-p4]:null;
+  $("#stateBody").innerHTML=states.map((s,i)=>`<tr><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td class="r">${probs?Math.round(probs[i]*100)+"%":(bad?'<span class="pending">check inputs</span>':'<span class="pending">to be locked</span>')}</td></tr>`).join("");
+  if(bad){$("#stateNote").innerHTML=`<b style="color:var(--bad)">Inconsistent inputs:</b> R-001 (${Math.round(pF*100)}%) plus R-004 (${Math.round(p4*100)}%) exceeds 100%. A flight by Dec 31 and a 2027 target in the Q3 10-Q cannot both happen.`;return}
+  $("#stateNote").textContent=probs?`Probabilities come from R-001, R-002 and R-004 and sum to ${Math.round(probs.reduce((a,b)=>a+b,0)*100)}%, assuming a first flight by Dec 31 and a 2027 target in the Q3 10-Q cannot both happen.`:"Probabilities fill in from register entries R-001, R-002 and R-004 once they are locked. The outcomes assume a first flight by Dec 31 and a 2027 target in the Q3 10-Q cannot both happen, so R-001 plus R-004 must not exceed 100%.";
+})();
+
+/* Iridium notes */
+(function(){
+  $("#collarNote").textContent=`At $${V.spot.toFixed(2)}, RKLB is $${(V.spot-67.5).toFixed(2)} above the $67.50 collar floor. Below the floor the ratio stays fixed at 0.4000, so Iridium holders absorb further RKLB declines and Rocket Lab's share issuance is capped at about 42.4M. Below the floor each Iridium share gets $27.00 plus 0.4000 × the RKLB price, for example $51.00 at $60.00. The ratio is set by a 10 day VWAP just before closing, not by today's price.`;
+  $("#spreadNote").textContent=`Iridium closed at $${V.irdm_px.toFixed(2)} on Oct 8, 2026, against an implied $${V.implied.toFixed(2)} per share at RKLB's $${V.spot.toFixed(2)}. That is a ${(V.spread*100).toFixed(1)}% gross spread, which prices timing, regulatory risk and, with RKLB this close to the floor, Iridium holders' direct exposure to the RKLB price.`;
+  $("#boardSpread").textContent=(V.spread*100).toFixed(1)+"%";
+})();
+
+/* valuation */
+(function(){
+  const m=x=>(x<0?"−":"")+"$"+Math.abs(x).toLocaleString(undefined,{maximumFractionDigits:0})+"M";
+  $("#shBody").innerHTML=V.shares.map(s=>`<tr><td>${s[0]}<div class="src">${s[2]}</div></td><td class="r">${(s[1]/1e6).toFixed(1)}M</td></tr>`).join("")+`<tr class="hl"><td><b>Total, before options and RSUs</b></td><td class="r"><b>${(V.sh_total/1e6).toFixed(1)}M</b></td></tr>`;
+  $("#cashBody").innerHTML=V.cash.map(c=>`<tr><td>${c[0]}<div class="src">${c[2]}</div></td><td class="r">${m(c[1])}</td></tr>`).join("")+`<tr class="hl"><td><b>Net debt, before burn and deal costs</b></td><td class="r"><b>${m(-V.net_cash)}</b></td></tr><tr><td>Plus 424B3 deal cost estimate (transaction $229.2M, equity issuance $18.0M)<div class="src">424B3 pro forma adjustments</div></td><td class="r">${m(-V.net_cash+V.deal_costs)}</td></tr>`;
+  $("#evBody").innerHTML=[["Market value at $"+V.spot.toFixed(2),"$"+(V.mcap/1e3).toFixed(1)+"B"],["Plus net debt at closing","$"+(-V.net_cash/1e3).toFixed(2)+"B"],["Enterprise value","$"+(V.ev/1e3).toFixed(1)+"B",1],["Combined LTM revenue, both through Jun 30, 2026","$"+(V.ltm/1e3).toFixed(2)+"B"],["EV / LTM revenue",V.ev_ltm.toFixed(1)+"×",1],["Combined FY2026E consensus revenue","$"+(V.fy26/1e3).toFixed(2)+"B"],["EV / FY2026E revenue",V.ev_fy26.toFixed(1)+"×",1],["With the 424B3 deal cost estimate ($"+V.deal_costs.toFixed(0)+"M)","EV $"+(V.ev_c/1e3).toFixed(1)+"B · "+V.ev_c_ltm.toFixed(1)+"× LTM · "+V.ev_c_fy26.toFixed(1)+"× FY2026E"]]
+    .map(r=>`<tr${r[2]?' class="hl"':""}><td>${r[2]?"<b>"+r[0]+"</b>":r[0]}</td><td class="r">${r[2]?"<b>"+r[1]+"</b>":r[1]}</td></tr>`).join("");
+})();
+const dd=68.40/151-1; $("#drawdown").textContent=fmtSPct(dd,0); $("#ddText").textContent=Math.round(-dd*100)+"%";
+
+/* register */
+(function(){
+  const ev=DATA.ledger.map(x=>x.entry),res={};ev.forEach(e=>{if(e.type==="claim_resolve")res[e.id]=e});
+  const n=DATA.claims.length,r=Object.keys(res).length;
+  $("#brierLine").textContent=`Calibration: scored after resolutions. ${r} of ${n} resolved.`+(r?"":" A Brier score appears with the first resolution.");
+  $("#claims").innerHTML=DATA.claims.map(c=>{const s=res[c.id];
+    const status=s?`<span class="chip ${s.outcome?"good":"bad"}">Resolved ${s.outcome?"true":"false"}</span>`:`<span class="chip muted">Open</span>`;
+    const pr=c.prob===null?`<div class="pending">Probability to be locked</div>`:`<div class="v num">${Math.round(c.prob*100)}%</div><div class="src">stated Oct 8</div>`;
+    return `<article class="claim ${c.primary?"primary":""}"><div class="id">${c.id}${c.primary?'<div class="src">PRIMARY</div>':""}</div><div class="txt">${c.claim}</div><div class="pr">${pr}</div><div class="meta"><div>${status} <span class="chip muted">${c.kind}</span></div><div><b>Why:</b> ${c.why||""}</div><div><b>Settled by:</b> ${c.settles}</div></div></article>`}).join("");
+})();
+
+/* ledger */
+function canon(o){if(o===null||typeof o!=="object")return JSON.stringify(o);if(Array.isArray(o))return "["+o.map(canon).join(",")+"]";return "{"+Object.keys(o).sort().map(k=>JSON.stringify(k)+":"+canon(o[k])).join(",")+"}"}
+function summary(e){
+  if(e.type==="publish")return e.note;
+  if(e.type==="claim_open")return `${e.id} opened${e.primary?" (primary)":""}: ${e.claim} p = ${e.prob===null?"pending":Math.round(e.prob*100)+"%"}.`;
+  if(e.type==="quarter_read")return `${e.period} read${e.backfill?" (backfill)":""}: ${e.shares.toLocaleString()} common as of ${e.shares_asof}, preferred ${e.preferred.toLocaleString()}; operating ${fmtM(e.op_k)}, building ${fmtM(e.capex_k)}, ATM gross ${fmtM(e.atm_gross_k)}; Neutron timing: ${e.neutron_timing}. ${e.accession}`;
+  if(e.type==="claim_resolve")return `${e.id} resolved ${e.outcome?"TRUE":"FALSE"}: ${e.evidence||""}`;
+  return e.type}
+$("#ledgerRows").innerHTML=`<div class="lrow"><span>#</span><span>Date</span><span class="t">Type</span><span>Entry</span></div>`+DATA.ledger.map(x=>`<div class="lrow"><span>${x.entry.seq}</span><span>${x.entry.date}</span><span class="t">${x.entry.type}</span><span class="s">${summary(x.entry)}</span></div>`).join("");
+document.querySelector("#ledger details summary").textContent=`Full entry log (${DATA.ledger.length} entries)`;
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+$("#verifyBtn").addEventListener("click",async()=>{const out=$("#verifyOut");
+  try{let prev="0".repeat(64);for(const x of DATA.ledger){if(x.prev!==prev)throw new Error(`entry ${x.entry.seq}: previous hash does not match`);const h=await sha(prev+canon(x.entry));if(h!==x.hash)throw new Error(`entry ${x.entry.seq}: content does not match its hash`);prev=h}
+    out.style.color="var(--good)";out.textContent=`Intact: ${DATA.ledger.length} entries.`}catch(err){out.style.color="var(--bad)";out.textContent="Broken chain. "+err.message}});
+</script>
