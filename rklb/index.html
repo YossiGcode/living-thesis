@@ -1,3 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A living thesis on Rocket Lab: ten dated claims with locked probabilities, every figure sourced to SEC filings, dated prices or dated consensus, updated every earnings season.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RKLB Living Thesis">
+<meta property="og:description" content="A living thesis on Rocket Lab: ten dated claims with locked probabilities, every figure sourced to SEC filings, dated prices or dated consensus, updated every earnings season.">
+<meta property="og:url" content="https://yossigcode.github.io/living-thesis/rklb/">
+<meta property="og:image" content="https://yossigcode.github.io/living-thesis/rklb/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta name="twitter:card" content="summary_large_image">
 <title>RKLB Living Thesis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -181,6 +195,8 @@ footer{margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--rule);displ
 .pending{font-family:var(--f-mono);font-size:.7rem;color:var(--warn);text-transform:uppercase;letter-spacing:.06em}
 .panel{align-content:start}
 </style>
+</head>
+<body>
 <div class="wrap">
 
 <header class="mast">
@@ -584,3 +600,5 @@ $("#verifyBtn").addEventListener("click",async()=>{const out=$("#verifyOut");
   try{let prev="0".repeat(64);for(const x of DATA.ledger){if(x.prev!==prev)throw new Error(`entry ${x.entry.seq}: previous hash does not match`);const h=await sha(prev+canon(x.entry));if(h!==x.hash)throw new Error(`entry ${x.entry.seq}: content does not match its hash`);prev=h}
     out.style.color="var(--good)";out.textContent=`Intact: ${DATA.ledger.length} entries.`}catch(err){out.style.color="var(--bad)";out.textContent="Broken chain. "+err.message}});
 </script>
+</body>
+</html>
