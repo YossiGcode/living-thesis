@@ -7,3 +7,4 @@ RKLB v1 posted Oct 9, 2026: https://lnkd.in/p/gBAu-3pp
 Archived copies:
 - v1.1: https://web.archive.org/web/20261102042120/https://yossigcode.github.io/living-thesis/rklb/
 - v1: https://web.archive.org/web/20261009162718/https://yossigcode.github.io/living-thesis/rklb/
+- v1 LinkedIn post: https://web.archive.org/web/20261009162436/https://www.linkedin.com/posts/yossi-guanish_i-believe-financial-analysis-will-never-be-share-7514359429333413888-_Ruo/
